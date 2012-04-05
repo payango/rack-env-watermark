@@ -13,14 +13,14 @@ module EnvWatermark
     end
 
     def call(env)
-      @status, @headers, @response = @app.call(env)
+      status, headers, response = @app.call(env)
 
-      if @headers["Content-Type"].include? "text/html"
-        doc = Nokogiri::HTML(@response.body)
-        doc.xpath("//body").add_class(@klass)
-        [@status, @headers, [doc.to_s]]
+      if headers["Content-Type"].match(/text\/html/)
+        doc = Nokogiri::HTML(response.is_a?(Array) ? response.first : response.try(:body))
+        doc.xpath("//body").add_class(@klass) if doc.xpath("//body")
+        [status, headers, [doc.to_s]]
       else
-        [@status, @headers, @response]
+        [status, headers, response]
       end
     end
 
